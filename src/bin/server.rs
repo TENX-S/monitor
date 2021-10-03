@@ -70,7 +70,6 @@ fn init_wait_queue() {
         let &(ref lock, ref cvar) = &*pair1;
         let mut active = lock.lock();
         cvar.wait(&mut active);
-        println!("Get");
         while let Some((fs_rx, tx)) = TASK_QUENE.lock().pop() {
             thread::spawn(move || loop {
                 match fs_rx.recv() {

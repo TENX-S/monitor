@@ -14,8 +14,6 @@ async fn get_remote_fsevents(client: &mut FsNotifyClient<Channel>, watch_dir: &s
         .await?
         .into_inner();
 
-    println!("connected");
-
     while let Some(msg) = stream.message().await? {
         if let Some(event) = msg.event {
             match event {
@@ -62,10 +60,7 @@ async fn get_remote_fsevents(client: &mut FsNotifyClient<Channel>, watch_dir: &s
 }
 
 async fn run(watch_dir: String) -> Result<()> {
-    let channel = Channel::builder(dotenv::var("REMOTE_ADDR")?.parse()?)
-        .connect()
-        .await?;
-    let mut client = FsNotifyClient::new(channel).send_gzip().accept_gzip();
+    let mut client = FsNotifyClient::connect(dotenv::var("REMOTE_ADDR")?).await?;
 
     get_remote_fsevents(&mut client, &watch_dir).await?;
 
@@ -102,5 +97,6 @@ async fn main() -> Result<()> {
             .map(tokio::spawn),
     )
     .await;
+
     Ok(())
 }
